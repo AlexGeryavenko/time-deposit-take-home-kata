@@ -4,6 +4,7 @@ import org.ikigaidigital.adapter.in.rest.generated.api.TimeDepositCommandsApi;
 import org.ikigaidigital.adapter.in.rest.generated.model.TimeDepositResponse;
 import org.ikigaidigital.adapter.in.rest.mapper.TimeDepositRestMapper;
 import org.ikigaidigital.application.port.in.UpdateBalancesUseCase;
+import org.ikigaidigital.domain.model.TimeDeposit;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,6 +24,7 @@ public class TimeDepositCommandController implements TimeDepositCommandsApi {
 
     @Override
     public ResponseEntity<List<TimeDepositResponse>> updateBalances() {
-        return ResponseEntity.ok(List.of());
+        List<TimeDeposit> updated = updateBalancesUseCase.updateBalances();
+        return ResponseEntity.ok(mapper.toResponseList(updated));
     }
 }
