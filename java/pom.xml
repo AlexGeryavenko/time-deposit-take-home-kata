@@ -23,7 +23,7 @@
               <generateModels>true</generateModels>
               <generateSupportingFiles>false</generateSupportingFiles>
               <generatorName>spring</generatorName>
-              <inputSpec>${project.basedir}/src/main/resources/openapi/api.yaml</inputSpec>
+              <inputSpec>${project.basedir}/src/main/resources/static/openapi/api.yaml</inputSpec>
               <modelPackage>org.ikigaidigital.adapter.in.rest.generated.model</modelPackage>
             </configuration>
             <goals>
@@ -304,5 +304,5 @@
     <testcontainers.version>1.20.4</testcontainers.version>
   </properties>
 
-  <version>1.0.0</version>
+  <version>1.0.1</version>
 </project>

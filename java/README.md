@@ -88,7 +88,7 @@ curl http://localhost:8080/api/v1/time-deposits \
 
 ## Swagger / OpenAPI
 
-The API is documented using an [OpenAPI 3.0 contract](src/main/resources/openapi/api.yaml) and exposed via Swagger UI at runtime.
+The API is documented using an [OpenAPI 3.0 contract](src/main/resources/static/openapi/api.yaml) and exposed via Swagger UI at runtime.
 This provides an interactive interface to explore endpoints, view request/response schemas, and execute API calls directly from
 the browser — no curl or Postman needed.
 
