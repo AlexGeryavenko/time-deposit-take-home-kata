@@ -3,5 +3,3 @@ spring:
     init:
       mode: always
       data-locations: classpath:seed-data.sql
-  jpa:
-    defer-datasource-initialization: true
