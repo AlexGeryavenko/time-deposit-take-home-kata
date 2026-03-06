@@ -18,7 +18,7 @@ cd java
 mvn spring-boot:test-run
 ```
 
-This starts a PostgreSQL 16 container via Testcontainers, runs Liquibase migrations, and serves the API on `http://localhost:8080`.
+This starts a PostgreSQL 18 container via Testcontainers, runs Liquibase migrations, and serves the API on `http://localhost:8080`.
 
 ## Commands
 
@@ -42,13 +42,10 @@ curl -X POST http://localhost:8080/api/v1/time-deposits/update-balances \
 
 ```json
 [
-  {
-    "id": 1,
-    "planType": "basic",
-    "balance": 1000.83,
-    "days": 31,
-    "withdrawals": []
-  }
+  { "id": 1, "planType": "basic", "balance": 1000.0, "days": 29, "withdrawals": null },
+  { "id": 2, "planType": "basic", "balance": 1000.83, "days": 31, "withdrawals": null },
+  { "id": 3, "planType": "basic", "balance": 5004.17, "days": 365, "withdrawals": null },
+  "... 7 more deposits ..."
 ]
 ```
 
@@ -63,26 +60,19 @@ curl http://localhost:8080/api/v1/time-deposits \
 {
   "content": [
     {
-      "id": 1,
-      "planType": "student",
-      "balance": 2005.00,
-      "days": 100,
+      "id": 3,
+      "planType": "basic",
+      "balance": 5000.0,
+      "days": 365,
       "withdrawals": [
-        {
-          "id": 1,
-          "amount": 200.00,
-          "date": "2026-01-15"
-        }
+        { "id": 1, "amount": 500.0, "date": "2024-01-15" }
       ]
     }
   ],
-  "totalElements": 10,
-  "totalPages": 1,
+  "page": 0,
   "size": 20,
-  "number": 0,
-  "first": true,
-  "last": true,
-  "empty": false
+  "totalElements": 10,
+  "totalPages": 1
 }
 ```
 
@@ -129,24 +119,13 @@ GET /api/v1/time-deposits?page=1&size=10&sort=balance,desc
 **TimeDepositResponse:**
 
 ```json
-{
-  "id": 1,
-  "planType": "basic",
-  "balance": 1000.83,
-  "days": 31,
-  "withdrawals": []
-}
+{ "id": 2, "planType": "basic", "balance": 1000.83, "days": 31, "withdrawals": null }
 ```
 
 **ErrorResponse** (returned for 400, 401, 429, 500):
 
 ```json
-{
-  "error": "TOO_MANY_REQUESTS",
-  "message": "Rate limit exceeded.",
-  "status": 429,
-  "timestamp": "2026-03-05T10:00:00.000Z"
-}
+{ "status": 401, "message": "Missing or invalid API key. Provide a valid X-API-Key header.", "correlationId": "a1b2c3d4-..." }
 ```
 
 ## Documentation
