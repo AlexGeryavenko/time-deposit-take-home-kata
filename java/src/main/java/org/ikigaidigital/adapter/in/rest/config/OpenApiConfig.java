@@ -17,7 +17,7 @@ public class OpenApiConfig {
         .info(new Info()
             .title("Time Deposit API")
             .description("XA Bank time deposit interest calculation system")
-            .version("1.0.1"))
+            .version("1.0.2"))
         .addSecurityItem(new SecurityRequirement().addList("ApiKeyAuth"))
         .components(new Components()
             .addSecuritySchemes("ApiKeyAuth", new SecurityScheme()
