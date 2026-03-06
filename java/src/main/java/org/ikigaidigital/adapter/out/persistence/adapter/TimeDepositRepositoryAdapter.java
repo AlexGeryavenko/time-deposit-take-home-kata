@@ -1,5 +1,6 @@
 package org.ikigaidigital.adapter.out.persistence.adapter;
 
+import org.ikigaidigital.adapter.out.persistence.entity.WithdrawalEntity;
 import org.ikigaidigital.adapter.out.persistence.mapper.TimeDepositPersistenceMapper;
 import org.ikigaidigital.adapter.out.persistence.repository.JpaTimeDepositRepository;
 import org.ikigaidigital.adapter.out.persistence.repository.JpaWithdrawalRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 public class TimeDepositRepositoryAdapter implements TimeDepositRepository {
@@ -30,25 +32,35 @@ public class TimeDepositRepositoryAdapter implements TimeDepositRepository {
 
     @Override
     public List<TimeDeposit> findAll() {
-        return List.of();
+        return mapper.toDomainList(jpaTimeDepositRepository.findAll());
     }
 
     @Override
     public Page<TimeDeposit> findAll(Pageable pageable) {
-        return Page.empty();
+        return jpaTimeDepositRepository.findAll(pageable)
+            .map(mapper::toDomain);
     }
 
     @Override
     public void updateBalance(int id, double balance) {
+        jpaTimeDepositRepository.updateBalance(id, balance);
     }
 
     @Override
     public Map<Integer, List<Withdrawal>> findWithdrawalsGroupedByDepositId(List<Integer> depositIds) {
-        return Map.of();
+        return groupWithdrawalsByDepositId(jpaWithdrawalRepository.findByTimeDepositIdIn(depositIds));
     }
 
     @Override
     public Map<Integer, List<Withdrawal>> findAllWithdrawalsGroupedByDepositId() {
-        return Map.of();
+        return groupWithdrawalsByDepositId(jpaWithdrawalRepository.findAll());
+    }
+
+    private Map<Integer, List<Withdrawal>> groupWithdrawalsByDepositId(List<WithdrawalEntity> entities) {
+        return entities.stream()
+            .collect(Collectors.groupingBy(
+                entity -> entity.getTimeDeposit().getId(),
+                Collectors.mapping(mapper::toWithdrawalDomain, Collectors.toList())
+            ));
     }
 }
