@@ -8,24 +8,20 @@ import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 @Configuration
 @EnableCaching
 public class CacheConfig {
 
-    @Value("${spring.cache.caffeine.max-size:100}")
-    private int maxSize;
-
-    @Value("${spring.cache.caffeine.ttl-seconds:300}")
-    private long ttlSeconds;
-
     @Bean
-    public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("deposits", "withdrawals");
-        cacheManager.setCaffeine(Caffeine.newBuilder()
+    public CacheManager cacheManager(
+            @Value("${api.cache.max-size:200}") int maxSize,
+            @Value("${api.cache.ttl-minutes:10}") int ttlMinutes) {
+        CaffeineCacheManager manager = new CaffeineCacheManager("deposits", "withdrawals");
+        manager.setCaffeine(Caffeine.newBuilder()
             .maximumSize(maxSize)
-            .expireAfterWrite(ttlSeconds, TimeUnit.SECONDS));
-        return cacheManager;
+            .expireAfterWrite(Duration.ofMinutes(ttlMinutes)));
+        return manager;
     }
 }
