@@ -13,7 +13,7 @@
 
     <groupId>org.ikigaidigital</groupId>
     <artifactId>time-deposit-kata</artifactId>
-    <version>0.6.0</version>
+    <version>0.7.0</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -36,6 +36,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
