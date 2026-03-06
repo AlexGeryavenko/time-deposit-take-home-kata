@@ -1,6 +1,9 @@
 api:
   security:
     api-key: ${API_KEY:changeme-dev-key}
+  rate-limit:
+    max-requests: 100
+    window-seconds: 60
 
 spring:
   datasource:
