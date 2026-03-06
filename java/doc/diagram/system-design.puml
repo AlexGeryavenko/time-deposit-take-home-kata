@@ -1,0 +1,46 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam backgroundColor white
+
+package "Inbound Adapters" {
+  [REST Controller\n(Spring MVC)] as REST
+  [Swagger UI\n(OpenAPI)] as Swagger
+}
+
+package "Domain" {
+  interface "TimeDepositUseCase\n<<inbound port>>" as InPort
+  [UpdateBalancesService] as UpdateSvc
+  [GetDepositsService] as GetSvc
+  [TimeDepositCalculator\n(updateBalance)] as Calc
+
+  package "Strategy" {
+    interface "InterestStrategy" as IStrategy
+    [BasicInterestStrategy] as Basic
+    [StudentInterestStrategy] as Student
+    [PremiumInterestStrategy] as Premium
+  }
+
+  [TimeDeposit\n(Domain Model)] as Model
+  interface "TimeDepositRepository\n<<outbound port>>" as OutPort
+}
+
+package "Outbound Adapters" {
+  [JPA Repository\n(Spring Data)] as JPA
+  database "PostgreSQL" as DB
+}
+
+REST --> InPort : HTTP request
+Swagger ..> REST : documents
+InPort <|.. UpdateSvc
+InPort <|.. GetSvc
+UpdateSvc --> Calc : delegates calculation
+Calc --> IStrategy : resolves strategy\nper plan type
+IStrategy <|.. Basic
+IStrategy <|.. Student
+IStrategy <|.. Premium
+UpdateSvc --> OutPort : save updated deposits
+GetSvc --> OutPort : fetch deposits\n+ withdrawals
+OutPort <|.. JPA
+JPA --> DB : JDBC
+
+@enduml
