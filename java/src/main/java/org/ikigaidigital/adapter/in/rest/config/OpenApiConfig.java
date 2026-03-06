@@ -11,18 +11,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-    @Bean
-    public OpenAPI customOpenAPI() {
-        return new OpenAPI()
-            .info(new Info()
-                .title("Time Deposit API")
-                .description("XA Bank time deposit interest calculation system")
-                .version("0.6.0"))
-            .addSecurityItem(new SecurityRequirement().addList("ApiKeyAuth"))
-            .components(new Components()
-                .addSecuritySchemes("ApiKeyAuth", new SecurityScheme()
-                    .type(SecurityScheme.Type.APIKEY)
-                    .in(SecurityScheme.In.HEADER)
-                    .name("X-API-Key")));
-    }
+  @Bean
+  public OpenAPI customOpenAPI() {
+    return new OpenAPI()
+        .info(new Info()
+            .title("Time Deposit API")
+            .description("XA Bank time deposit interest calculation system")
+            .version("0.6.0"))
+        .addSecurityItem(new SecurityRequirement().addList("ApiKeyAuth"))
+        .components(new Components()
+            .addSecuritySchemes("ApiKeyAuth", new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.HEADER)
+                .name("X-API-Key")));
+  }
 }

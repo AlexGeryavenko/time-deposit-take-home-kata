@@ -9,7 +9,7 @@ servers:
     description: Local development server
 
 security:
-  - ApiKeyAuth: []
+  - ApiKeyAuth: [ ]
 
 tags:
   - name: TimeDepositCommands

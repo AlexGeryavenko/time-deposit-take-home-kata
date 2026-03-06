@@ -1,48 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <!-- ================================================================== -->
-    <!-- Production (default): JSON to stdout — Loki scrapes stdout         -->
-    <!-- ================================================================== -->
-    <springProfile name="!dev">
-        <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="org.ikigaidigital.adapter.in.rest.logging.MaskingJsonEncoder">
-                <customFields>{"service":"time-deposit-api"}</customFields>
-                <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                    <maxDepthPerThrowable>10</maxDepthPerThrowable>
-                    <rootCauseFirst>true</rootCauseFirst>
-                </throwableConverter>
-                <timeZone>UTC</timeZone>
-                <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
-            </encoder>
-        </appender>
+  <!-- ================================================================== -->
+  <!-- Production (default): JSON to stdout — Loki scrapes stdout         -->
+  <!-- ================================================================== -->
+  <springProfile name="!dev">
+    <appender class="ch.qos.logback.core.ConsoleAppender" name="JSON">
+      <encoder class="org.ikigaidigital.adapter.in.rest.logging.MaskingJsonEncoder">
+        <customFields>{"service":"time-deposit-api"}</customFields>
+        <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+          <maxDepthPerThrowable>10</maxDepthPerThrowable>
+          <rootCauseFirst>true</rootCauseFirst>
+        </throwableConverter>
+        <timeZone>UTC</timeZone>
+        <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+      </encoder>
+    </appender>
 
-        <logger name="AUDIT" level="INFO" additivity="false">
-            <appender-ref ref="JSON"/>
-        </logger>
+    <logger additivity="false" level="INFO" name="AUDIT">
+      <appender-ref ref="JSON"/>
+    </logger>
 
-        <root level="INFO">
-            <appender-ref ref="JSON"/>
-        </root>
-    </springProfile>
+    <root level="INFO">
+      <appender-ref ref="JSON"/>
+    </root>
+  </springProfile>
 
-    <!-- ================================================================== -->
-    <!-- Dev profile: human-readable console with correlationId             -->
-    <!-- ================================================================== -->
-    <springProfile name="dev">
-        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <layout class="org.ikigaidigital.adapter.in.rest.logging.MaskingPatternLayout">
-                <pattern>%d{HH:mm:ss.SSS} [%thread] [%X{correlationId:-no-cid}] %-5level %logger{36} - %msg%n</pattern>
-            </layout>
-        </appender>
+  <!-- ================================================================== -->
+  <!-- Dev profile: human-readable console with correlationId             -->
+  <!-- ================================================================== -->
+  <springProfile name="dev">
+    <appender class="ch.qos.logback.core.ConsoleAppender" name="CONSOLE">
+      <layout class="org.ikigaidigital.adapter.in.rest.logging.MaskingPatternLayout">
+        <pattern>%d{HH:mm:ss.SSS} [%thread] [%X{correlationId:-no-cid}] %-5level %logger{36} - %msg%n</pattern>
+      </layout>
+    </appender>
 
-        <logger name="AUDIT" level="DEBUG" additivity="false">
-            <appender-ref ref="CONSOLE"/>
-        </logger>
+    <logger additivity="false" level="DEBUG" name="AUDIT">
+      <appender-ref ref="CONSOLE"/>
+    </logger>
 
-        <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-        </root>
-    </springProfile>
+    <root level="INFO">
+      <appender-ref ref="CONSOLE"/>
+    </root>
+  </springProfile>
 
 </configuration>
