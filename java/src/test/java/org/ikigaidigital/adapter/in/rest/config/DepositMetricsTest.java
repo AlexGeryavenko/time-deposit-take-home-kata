@@ -1,0 +1,53 @@
+package org.ikigaidigital.adapter.in.rest.config;
+
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class DepositMetricsTest {
+
+    private DepositMetrics metrics;
+    private SimpleMeterRegistry registry;
+
+    @BeforeEach
+    void setUp() {
+        registry = new SimpleMeterRegistry();
+        metrics = new DepositMetrics(registry);
+    }
+
+    @Test
+    void shouldRegisterBalanceUpdateCounter() {
+        metrics.getBalanceUpdateCount().increment();
+
+        assertThat(registry.counter("deposit.balance_update.count").count()).isEqualTo(1.0);
+    }
+
+    @Test
+    void shouldRegisterBalanceUpdateTimer() {
+        assertThat(metrics.getBalanceUpdateDuration()).isNotNull();
+        assertThat(registry.timer("deposit.balance_update.duration")).isNotNull();
+    }
+
+    @Test
+    void shouldRegisterInterestTotalCounter() {
+        metrics.getInterestTotal().increment(42.5);
+
+        assertThat(registry.counter("deposit.interest.total").count()).isEqualTo(42.5);
+    }
+
+    @Test
+    void shouldRegisterQueryCounter() {
+        metrics.getQueryCount().increment();
+        metrics.getQueryCount().increment();
+
+        assertThat(registry.counter("deposit.query.count").count()).isEqualTo(2.0);
+    }
+
+    @Test
+    void shouldRegisterQueryTimer() {
+        assertThat(metrics.getQueryDuration()).isNotNull();
+        assertThat(registry.timer("deposit.query.duration")).isNotNull();
+    }
+}
