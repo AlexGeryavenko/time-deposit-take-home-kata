@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class Withdrawal {
 
-    private int id;
-    private double amount;
-    private LocalDate date;
+    private final int id;
+    private final double amount;
+    private final LocalDate date;
 }
