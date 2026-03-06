@@ -15,22 +15,22 @@ import lombok.Setter;
 @Entity
 @Table(name = "time_deposits")
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class TimeDepositEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "time_deposits_seq")
-    @SequenceGenerator(name = "time_deposits_seq", sequenceName = "time_deposits_seq", allocationSize = 50)
-    private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "time_deposits_seq")
+  @SequenceGenerator(name = "time_deposits_seq", sequenceName = "time_deposits_seq", allocationSize = 50)
+  private Integer id;
 
-    @Column(name = "plan_type", nullable = false)
-    private String planType;
+  @Column(name = "plan_type", nullable = false, length = 20)
+  private String planType;
 
-    @Column(nullable = false)
-    private Integer days;
+  @Column(nullable = false)
+  private Integer days;
 
-    @Column(nullable = false)
-    private Double balance;
+  @Setter
+  @Column(nullable = false)
+  private Double balance;
 }

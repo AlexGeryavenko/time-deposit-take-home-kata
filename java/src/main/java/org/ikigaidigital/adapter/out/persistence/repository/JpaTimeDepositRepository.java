@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface JpaTimeDepositRepository extends JpaRepository<TimeDepositEntity, Integer> {
 
-    @Modifying
-    @Query("UPDATE TimeDepositEntity t SET t.balance = :balance WHERE t.id = :id")
-    void updateBalance(@Param("id") int id, @Param("balance") double balance);
+  @Modifying
+  @Query("UPDATE TimeDepositEntity t SET t.balance = :balance WHERE t.id = :id")
+  void updateBalance(@Param("id") int id, @Param("balance") double balance);
 }

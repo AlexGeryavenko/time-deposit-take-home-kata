@@ -4,50 +4,50 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.UUID;
-
+@Slf4j(topic = "AUDIT")
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class AuditLoggingFilter extends OncePerRequestFilter {
 
-    private static final Logger log = LoggerFactory.getLogger(AuditLoggingFilter.class);
-    private static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
-    private static final String CORRELATION_ID_MDC_KEY = "correlationId";
+  private static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        String correlationId = request.getHeader(CORRELATION_ID_HEADER);
-        if (correlationId == null || correlationId.isBlank()) {
-            correlationId = UUID.randomUUID().toString();
-        }
+  @Override
+  protected void doFilterInternal(HttpServletRequest request,
+      HttpServletResponse response,
+      FilterChain filterChain) throws ServletException, IOException {
+    long start = System.currentTimeMillis();
+    try {
+      String correlationId = request.getHeader(CORRELATION_ID_HEADER);
+      if (correlationId == null || correlationId.isBlank()) {
+        correlationId = UUID.randomUUID().toString();
+      }
 
-        MDC.put(CORRELATION_ID_MDC_KEY, correlationId);
-        response.setHeader(CORRELATION_ID_HEADER, correlationId);
+      MDC.put("correlationId", correlationId);
+      MDC.put("httpMethod", request.getMethod());
+      MDC.put("httpUri", request.getRequestURI());
+      MDC.put("clientIp", request.getRemoteAddr());
+      MDC.put("logCategory", "http_request");
 
-        long startTime = System.currentTimeMillis();
+      response.setHeader(CORRELATION_ID_HEADER, correlationId);
 
-        try {
-            filterChain.doFilter(request, response);
-        } finally {
-            long durationMs = System.currentTimeMillis() - startTime;
-            log.info("httpMethod={} httpUri={} clientIp={} httpStatus={} durationMs={}",
-                request.getMethod(),
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                response.getStatus(),
-                durationMs);
-            MDC.remove(CORRELATION_ID_MDC_KEY);
-        }
+      filterChain.doFilter(request, response);
+    } finally {
+      long duration = System.currentTimeMillis() - start;
+      MDC.put("httpStatus", String.valueOf(response.getStatus()));
+      MDC.put("durationMs", String.valueOf(duration));
+
+      log.info("HTTP request completed");
+
+      MDC.clear();
     }
+  }
 }

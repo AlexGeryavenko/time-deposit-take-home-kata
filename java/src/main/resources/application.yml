@@ -1,11 +1,13 @@
-api:
-  security:
-    api-key: ${API_KEY:changeme-dev-key}
-  rate-limit:
-    max-requests: 100
-    window-seconds: 60
-
 spring:
+  application:
+    name: time-deposit-api
+  web:
+    resources:
+      static-locations: classpath:/static/,classpath:/public/
+  data:
+    web:
+      pageable:
+        max-page-size: 100
   datasource:
     url: jdbc:postgresql://localhost:5432/time_deposit
     username: ${DB_USERNAME:postgres}
@@ -20,10 +22,44 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
+
+api:
+  security:
+    api-key: ${API_KEY:changeme-dev-key}
+  rate-limit:
+    max-requests: 60
+    window-seconds: 60
   cache:
-    type: caffeine
-    caffeine:
-      spec: maximumSize=100,expireAfterWrite=300s
-    cache-names:
-      - deposits
-      - withdrawals
+    max-size: 200
+    ttl-minutes: 10
+  batch:
+    size: 1000
+
+logging:
+  level:
+    root: INFO
+    org.ikigaidigital: INFO
+    AUDIT: INFO
+    org.hibernate.SQL: WARN
+    org.springframework.security: WARN
+    liquibase: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+springdoc:
+  swagger-ui:
+    url: /openapi/api.yaml
+
+server:
+  port: 8080

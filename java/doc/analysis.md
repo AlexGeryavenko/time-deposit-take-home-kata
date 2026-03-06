@@ -88,7 +88,13 @@ Plan types are compared with `.equals("student")`, `.equals("premium")`, `.equal
 ### Index-Based Loop
 
 ```java
-for (int i = 0; i < xs.size(); i++) { xs.get(i)... }
+for(int i = 0; i <xs.
+
+size();
+
+i++){xs.
+
+get(i)...}
 ```
 
 Should be `for (TimeDeposit deposit : deposits)`.

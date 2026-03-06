@@ -8,9 +8,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TimeDeposit {
 
-    private int id;
-    private String planType;
-    @Setter
-    private Double balance;
-    private int days;
+  private int id;
+  private String planType;
+  @Setter
+  private Double balance;
+  private int days;
 }
