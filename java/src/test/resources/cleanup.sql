@@ -1,2 +1,1 @@
-DELETE FROM withdrawals;
-DELETE FROM time_deposits;
+TRUNCATE withdrawals, time_deposits CASCADE;
