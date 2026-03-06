@@ -31,10 +31,11 @@ class DepositMetricsTest {
     }
 
     @Test
-    void shouldRegisterInterestTotalCounter() {
-        metrics.getInterestTotal().increment(42.5);
+    void shouldRegisterInterestTotalSummary() {
+        metrics.getInterestTotal().record(42.5);
 
-        assertThat(registry.counter("deposit.interest.total").count()).isEqualTo(42.5);
+        assertThat(metrics.getInterestTotal().count()).isEqualTo(1);
+        assertThat(metrics.getInterestTotal().totalAmount()).isEqualTo(42.5);
     }
 
     @Test

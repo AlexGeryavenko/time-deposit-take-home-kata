@@ -1,6 +1,7 @@
 package org.ikigaidigital.adapter.in.rest.config;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.springframework.stereotype.Component;
@@ -10,7 +11,7 @@ public class DepositMetrics {
 
     private final Counter balanceUpdateCount;
     private final Timer balanceUpdateDuration;
-    private final Counter interestTotal;
+    private final DistributionSummary interestTotal;
     private final Counter queryCount;
     private final Timer queryDuration;
 
@@ -21,8 +22,8 @@ public class DepositMetrics {
         this.balanceUpdateDuration = Timer.builder("deposit.balance_update.duration")
             .description("Duration of balance update operations")
             .register(registry);
-        this.interestTotal = Counter.builder("deposit.interest.total")
-            .description("Total interest accrued across all deposits")
+        this.interestTotal = DistributionSummary.builder("deposit.interest.total")
+            .description("Total interest added per balance update run")
             .register(registry);
         this.queryCount = Counter.builder("deposit.query.count")
             .description("Number of deposit query operations")
@@ -40,7 +41,7 @@ public class DepositMetrics {
         return balanceUpdateDuration;
     }
 
-    public Counter getInterestTotal() {
+    public DistributionSummary getInterestTotal() {
         return interestTotal;
     }
 
