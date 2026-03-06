@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import org.ikigaidigital.domain.model.TimeDeposit;
 import org.ikigaidigital.domain.service.TimeDepositCalculator;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -19,11 +20,14 @@ public class TimeDepositCalculatorParameterizedTest {
     return Stream.of(
         // No interest: days <= 30
         Arguments.of("basic", 1000.00, 0, 1000.00),
+        Arguments.of("basic", 1000.00, 1, 1000.00),
         Arguments.of("basic", 1000.00, 29, 1000.00),
         Arguments.of("basic", 1000.00, 30, 1000.00),
         // Interest: days > 30
         Arguments.of("basic", 1000.00, 31, 1000.83),
         Arguments.of("basic", 1000.00, 365, 1000.83),
+        Arguments.of("basic", 1000.00, 366, 1000.83),
+        Arguments.of("basic", 1000.00, 500, 1000.83),
         Arguments.of("basic", 1234567.00, 45, 1235595.81)
     );
   }
@@ -32,6 +36,7 @@ public class TimeDepositCalculatorParameterizedTest {
     return Stream.of(
         // No interest: days <= 30
         Arguments.of("student", 1000.00, 0, 1000.00),
+        Arguments.of("student", 1000.00, 29, 1000.00),
         Arguments.of("student", 1000.00, 30, 1000.00),
         // Interest: 30 < days < 366
         Arguments.of("student", 1000.00, 31, 1002.50),
@@ -65,10 +70,35 @@ public class TimeDepositCalculatorParameterizedTest {
         Arguments.of("basic", 0.00, 31, 0.00),
         Arguments.of("student", 0.00, 31, 0.00),
         Arguments.of("premium", 0.00, 46, 0.00),
+        // Very small balance (rounding check)
+        Arguments.of("basic", 1.00, 31, 1.00),
         // Large balance
         Arguments.of("basic", 9999999.99, 31, 10008333.32),
         Arguments.of("student", 9999999.99, 31, 10024999.99),
         Arguments.of("premium", 9999999.99, 46, 10041666.66)
+    );
+  }
+
+  static Stream<Arguments> multipleDepositCases() {
+    return Stream.of(
+        // Mix of all plan types
+        Arguments.of(
+            List.of(
+                new TimeDeposit(1, "basic", 1000.00, 31),
+                new TimeDeposit(2, "student", 1000.00, 31),
+                new TimeDeposit(3, "premium", 1000.00, 46)
+            ),
+            List.of(1000.83, 1002.50, 1004.17)
+        ),
+        // Mix of eligible and ineligible
+        Arguments.of(
+            List.of(
+                new TimeDeposit(1, "basic", 1000.00, 30),
+                new TimeDeposit(2, "student", 1000.00, 366),
+                new TimeDeposit(3, "premium", 1000.00, 45)
+            ),
+            List.of(1000.00, 1000.00, 1000.00)
+        )
     );
   }
 
@@ -94,6 +124,20 @@ public class TimeDepositCalculatorParameterizedTest {
   @MethodSource("edgeCases")
   void shouldHandleEdgeCases(String planType, double balance, int days, double expected) {
     assertSingleDeposit(planType, balance, days, expected);
+  }
+
+  @ParameterizedTest(name = "Multiple deposits updated in single call - case {index}")
+  @MethodSource("multipleDepositCases")
+  @DisplayName("updateBalance handles multiple deposits simultaneously")
+  void shouldHandleMultipleDeposits(List<TimeDeposit> deposits, List<Double> expectedBalances) {
+    calculator.updateBalance(deposits);
+
+    for (int i = 0; i < deposits.size(); i++) {
+      assertThat(deposits.get(i).getBalance())
+          .as("Deposit %d (%s, %d days)", deposits.get(i).getId(),
+              deposits.get(i).getPlanType(), deposits.get(i).getDays())
+          .isEqualTo(expectedBalances.get(i));
+    }
   }
 
   private void assertSingleDeposit(String planType, double balance, int days, double expected) {

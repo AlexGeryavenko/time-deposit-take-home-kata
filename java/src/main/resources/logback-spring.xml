@@ -5,7 +5,7 @@
   <!-- Production (default): JSON to stdout — Loki scrapes stdout         -->
   <!-- ================================================================== -->
   <springProfile name="!dev">
-    <appender class="ch.qos.logback.core.ConsoleAppender" name="JSON">
+    <appender class="ch.qos.logback.core.ConsoleAppender" name="STDOUT_JSON">
       <encoder class="org.ikigaidigital.adapter.in.rest.logging.MaskingJsonEncoder">
         <customFields>{"service":"time-deposit-api"}</customFields>
         <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
@@ -18,11 +18,11 @@
     </appender>
 
     <logger additivity="false" level="INFO" name="AUDIT">
-      <appender-ref ref="JSON"/>
+      <appender-ref ref="STDOUT_JSON"/>
     </logger>
 
     <root level="INFO">
-      <appender-ref ref="JSON"/>
+      <appender-ref ref="STDOUT_JSON"/>
     </root>
   </springProfile>
 
@@ -30,18 +30,18 @@
   <!-- Dev profile: human-readable console with correlationId             -->
   <!-- ================================================================== -->
   <springProfile name="dev">
-    <appender class="ch.qos.logback.core.ConsoleAppender" name="CONSOLE">
+    <appender class="ch.qos.logback.core.ConsoleAppender" name="STDOUT_CONSOLE">
       <layout class="org.ikigaidigital.adapter.in.rest.logging.MaskingPatternLayout">
         <pattern>%d{HH:mm:ss.SSS} [%thread] [%X{correlationId:-no-cid}] %-5level %logger{36} - %msg%n</pattern>
       </layout>
     </appender>
 
     <logger additivity="false" level="DEBUG" name="AUDIT">
-      <appender-ref ref="CONSOLE"/>
+      <appender-ref ref="STDOUT_CONSOLE"/>
     </logger>
 
     <root level="INFO">
-      <appender-ref ref="CONSOLE"/>
+      <appender-ref ref="STDOUT_CONSOLE"/>
     </root>
   </springProfile>
 

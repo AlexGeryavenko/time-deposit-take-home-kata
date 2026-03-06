@@ -33,6 +33,12 @@ public class TimeDepositCalculator {
           .map(strategy -> strategy.calculateInterest(deposit))
           .orElse(0.0);
 
+      // SonarQube: "Use BigDecimal.valueOf instead of new BigDecimal"
+      // Suppressed: BigDecimal.valueOf(double) internally calls Double.toString(),
+      // which applies its own rounding before BigDecimal conversion.
+      // new BigDecimal(double) preserves the exact IEEE 754 representation,
+      // ensuring consistent HALF_UP rounding on the true computed value.
+      @SuppressWarnings("java:S2111")
       double rounded = new BigDecimal(interest)
           .setScale(2, RoundingMode.HALF_UP)
           .doubleValue();
