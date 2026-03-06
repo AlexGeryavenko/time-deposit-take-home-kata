@@ -1,5 +1,7 @@
 package org.ikigaidigital;
 
+import org.ikigaidigital.domain.model.TimeDeposit;
+import org.ikigaidigital.domain.service.TimeDepositCalculator;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
