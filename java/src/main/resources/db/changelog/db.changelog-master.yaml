@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/001-create-time-deposits.sql
+  - include:
+      file: db/changelog/002-create-withdrawals.sql
+  - include:
+      file: db/changelog/003-add-indexes.sql
