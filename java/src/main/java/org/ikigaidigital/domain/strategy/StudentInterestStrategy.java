@@ -1,6 +1,6 @@
 package org.ikigaidigital.domain.strategy;
 
-import org.ikigaidigital.TimeDeposit;
+import org.ikigaidigital.domain.model.TimeDeposit;
 import org.ikigaidigital.domain.constant.InterestConstants;
 import org.ikigaidigital.domain.enums.PlanType;
 

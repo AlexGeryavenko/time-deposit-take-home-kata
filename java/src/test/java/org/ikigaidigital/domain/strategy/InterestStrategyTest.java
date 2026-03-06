@@ -1,6 +1,6 @@
 package org.ikigaidigital.domain.strategy;
 
-import org.ikigaidigital.TimeDeposit;
+import org.ikigaidigital.domain.model.TimeDeposit;
 import org.ikigaidigital.domain.enums.PlanType;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
