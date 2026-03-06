@@ -1,0 +1,158 @@
+openapi: 3.0.3
+info:
+  title: Time Deposit API
+  description: XA Bank time deposit interest calculation system
+  version: 0.6.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: TimeDepositCommands
+    description: Operations that modify time deposit state
+  - name: TimeDepositQueries
+    description: Operations that read time deposit state
+
+paths:
+  /api/v1/time-deposits/update-balances:
+    post:
+      tags:
+        - TimeDepositCommands
+      operationId: updateBalances
+      summary: Recalculate interest on all time deposits
+      description: Recalculates monthly interest for all deposits based on their plan type and days held, then persists the updated balances.
+      responses:
+        '200':
+          description: Balances updated successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeDepositResponse'
+        '401':
+          description: Unauthorized — missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/time-deposits:
+    get:
+      tags:
+        - TimeDepositQueries
+      operationId: getTimeDeposits
+      summary: Retrieve all time deposits with withdrawals
+      description: Returns a paginated list of all time deposits including their associated withdrawal history.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            default: id,asc
+      responses:
+        '200':
+          description: Deposits retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedTimeDepositResponse'
+        '401':
+          description: Unauthorized — missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    TimeDepositResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        planType:
+          type: string
+        balance:
+          type: number
+          format: double
+        days:
+          type: integer
+        withdrawals:
+          type: array
+          items:
+            $ref: '#/components/schemas/WithdrawalResponse'
+
+    WithdrawalResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        amount:
+          type: number
+          format: double
+        date:
+          type: string
+          format: date
+
+    PagedTimeDepositResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeDepositResponse'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+        correlationId:
+          type: string
