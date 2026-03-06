@@ -35,6 +35,7 @@ class ApiKeyAuthenticationFilterTest {
     void setUp() {
         filter = new ApiKeyAuthenticationFilter(VALID_KEY);
         request = new MockHttpServletRequest();
+        request.setRequestURI("/api/v1/time-deposits");
         response = new MockHttpServletResponse();
         SecurityContextHolder.clearContext();
     }
@@ -55,6 +56,7 @@ class ApiKeyAuthenticationFilterTest {
         filter.doFilterInternal(request, response, filterChain);
 
         assertThat(response.getStatus()).isEqualTo(401);
+        assertThat(response.getContentAsString()).contains("UNAUTHORIZED");
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(filterChain, never()).doFilter(any(), any());
     }
@@ -66,12 +68,23 @@ class ApiKeyAuthenticationFilterTest {
         filter.doFilterInternal(request, response, filterChain);
 
         assertThat(response.getStatus()).isEqualTo(401);
+        assertThat(response.getContentAsString()).contains("UNAUTHORIZED");
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(filterChain, never()).doFilter(any(), any());
     }
 
     @Test
-    void shouldMaskShortKeyInResponse() throws ServletException, IOException {
+    void shouldSkipNonApiPaths() throws ServletException, IOException {
+        request.setRequestURI("/swagger-ui/index.html");
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void shouldMaskShortKeyAsStars() throws ServletException, IOException {
         request.addHeader("X-API-Key", "ab");
 
         filter.doFilterInternal(request, response, filterChain);

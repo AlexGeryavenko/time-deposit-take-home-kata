@@ -4,72 +4,76 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.List;
+import java.time.Instant;
 
+@Slf4j(topic = "AUDIT")
 public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Logger log = LoggerFactory.getLogger(ApiKeyAuthenticationFilter.class);
     private static final String API_KEY_HEADER = "X-API-Key";
 
-    private final String apiKey;
+    private final String expectedApiKey;
 
-    public ApiKeyAuthenticationFilter(String apiKey) {
-        this.apiKey = apiKey;
+    public ApiKeyAuthenticationFilter(String expectedApiKey) {
+        this.expectedApiKey = expectedApiKey;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return !path.startsWith("/api/");
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String providedKey = request.getHeader(API_KEY_HEADER);
+        String apiKey = request.getHeader(API_KEY_HEADER);
 
-        if (providedKey == null || providedKey.isBlank()) {
-            log.warn("Missing API key from {}", request.getRemoteAddr());
-            sendUnauthorized(response, "Missing API key");
+        if (apiKey == null || !MessageDigest.isEqual(
+                expectedApiKey.getBytes(), apiKey.getBytes())) {
+            MDC.put("apiKeyId", apiKey == null ? "absent" : maskApiKey(apiKey));
+            MDC.put("authOutcome", "failure");
+            log.warn("Authentication failed");
+            writeUnauthorizedResponse(response);
             return;
         }
 
-        if (!constantTimeEquals(apiKey, providedKey)) {
-            log.warn("Invalid API key [{}] from {}", maskKey(providedKey), request.getRemoteAddr());
-            sendUnauthorized(response, "Invalid API key");
-            return;
-        }
+        MDC.put("apiKeyId", maskApiKey(apiKey));
+        MDC.put("authOutcome", "success");
+        log.debug("Authentication successful");
 
-        UsernamePasswordAuthenticationToken authentication =
-            new UsernamePasswordAuthenticationToken("api-client", null,
-                List.of(new SimpleGrantedAuthority("ROLE_API")));
+        var authentication = new PreAuthenticatedAuthenticationToken(
+            "api-key-user", null, AuthorityUtils.NO_AUTHORITIES);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
     }
 
-    private boolean constantTimeEquals(String expected, String provided) {
-        byte[] expectedBytes = expected.getBytes(StandardCharsets.UTF_8);
-        byte[] providedBytes = provided.getBytes(StandardCharsets.UTF_8);
-        return MessageDigest.isEqual(expectedBytes, providedBytes);
-    }
-
-    private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write("{\"status\":401,\"message\":\"" + message + "\"}");
-    }
-
-    static String maskKey(String key) {
-        if (key == null || key.length() <= 4) {
+    private String maskApiKey(String key) {
+        if (key.length() <= 4) {
             return "****";
         }
-        return key.substring(0, 4) + "****";
+        return "****" + key.substring(key.length() - 4);
+    }
+
+    private void writeUnauthorizedResponse(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write(
+            "{\"error\":\"UNAUTHORIZED\","
+                + "\"message\":\"Missing or invalid API key. Provide a valid X-API-Key header.\","
+                + "\"status\":" + HttpStatus.UNAUTHORIZED.value() + ","
+                + "\"timestamp\":\"" + Instant.now() + "\"}");
     }
 }
