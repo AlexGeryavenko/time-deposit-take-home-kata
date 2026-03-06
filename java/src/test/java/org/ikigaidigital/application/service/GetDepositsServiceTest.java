@@ -1,11 +1,13 @@
 package org.ikigaidigital.application.service;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.ikigaidigital.adapter.in.rest.config.DepositMetrics;
 import org.ikigaidigital.application.port.out.TimeDepositRepository;
 import org.ikigaidigital.domain.model.TimeDeposit;
 import org.ikigaidigital.domain.model.Withdrawal;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -27,8 +29,14 @@ class GetDepositsServiceTest {
     @Mock
     private TimeDepositRepository repository;
 
-    @InjectMocks
+    private DepositMetrics metrics;
     private GetDepositsService service;
+
+    @BeforeEach
+    void setUp() {
+        metrics = new DepositMetrics(new SimpleMeterRegistry());
+        service = new GetDepositsService(repository, metrics);
+    }
 
     @Test
     void shouldReturnPaginatedDeposits() {
@@ -54,6 +62,17 @@ class GetDepositsServiceTest {
         Page<TimeDeposit> result = service.getAllDeposits(pageable);
 
         assertThat(result.getContent()).isEmpty();
+    }
+
+    @Test
+    void shouldRecordMetrics() {
+        Page<TimeDeposit> page = new PageImpl<>(List.of());
+        Pageable pageable = PageRequest.of(0, 20);
+        when(repository.findAll(pageable)).thenReturn(page);
+
+        service.getAllDeposits(pageable);
+
+        assertThat(metrics.getQueryCount().count()).isEqualTo(1.0);
     }
 
     @Test
